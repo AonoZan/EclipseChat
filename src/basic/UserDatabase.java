@@ -38,10 +38,10 @@ public class UserDatabase<T> extends ArrayList<T> implements Serializable{
 		return database;
 	}
 	
-	public static void save(Object database) {
+	public void save(Object database) {
 		save(database, DATABASE_LOC);
 	}
-	public static void save(Object database, String path) {
+	public void save(Object database, String path) {
 		try (ObjectOutputStream objectStream = new ObjectOutputStream(Files.newOutputStream(Paths.get(path)))) {
 			objectStream.writeObject(database);
 		} catch (IOException ioe) {
