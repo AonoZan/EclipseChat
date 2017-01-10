@@ -19,29 +19,33 @@ public class Server {
 	
 	public Server(int portNumber) {
 		this.portNumber = portNumber;
-		try {
-			userDatabase = userDatabase.load();
-		} catch (Exception e) {
-			// TODO: handle exception
-		}
+//		try {
+//			userDatabase = userDatabase.load();
+//		} catch (Exception e) {
+//			System.out.println("Cant load database.");
+//		}
 	}
 	
 	public void start() {
 		try (ServerSocket serverSocket = new ServerSocket(portNumber)){
+			System.out.println(serverSocket.getInetAddress());
 			while(serverActive) {
 				Socket socket = serverSocket.accept();
 				
 				User user = new User(socket);
 				userDatabase.add(user);
 				user.start();
+				Message newUserMessage = new Message("New user on server: " + user.getNickName());
+				answerAll(newUserMessage);
 			}
 		} catch (Exception e) {
 			// TODO: handle exception
 		}
 	}
 	
-	public void answerAll(String message) {
+	public void answerAll(Message message) {
 		for (Object object : userDatabase) {
+			System.out.println("sending to all: " + message.getMessageContent());
 			((User)object).answer(message);
 		}
 	}
@@ -84,7 +88,7 @@ public class Server {
 		private ObjectInputStream inStream;
 		private ObjectOutputStream outStream;
 		
-		private String name;
+		private String nickName;
 		private String ipAdress;
 		private Date dateLoggedIn;
 		
@@ -96,7 +100,7 @@ public class Server {
 				inStream = new ObjectInputStream(socket.getInputStream());
 				outStream = new ObjectOutputStream(socket.getOutputStream());
 				
-				name = (String)inStream.readObject();
+				nickName = (String)inStream.readObject();
 				ipAdress = socket.getLocalAddress().getHostAddress();
 				dateLoggedIn = new Date();
 			} catch (Exception e) {
@@ -110,32 +114,49 @@ public class Server {
 			while(serverActive) {
 				try {
 					message = (Message)inStream.readObject();
-					String messageContent = message.getMessageContent();
+//					String messageContent = message.getMessageContent();
 					switch (message.getMessageType()) {
-					case Message.TYPE_SPEECH:
-						answerAll(messageContent);
-						break;
-					case Message.TYPE_LOGOUT:
-						logOut(this);
-						break;
-					case Message.TYPE_WHOSIN:
-						answer(userDatabase.listAll());
-						break;
-					default:
-						break;
+						case Message.TYPE_SPEECH:
+							answerAll(message);
+							break;
+						case Message.TYPE_LOGOUT:
+							logOut(this);
+							break;
+						case Message.TYPE_WHOSIN:
+							Message whois = new Message(userDatabase.listAll());
+							answer(whois);
+							break;
+						default:
+							break;
 					}
 					
 				}catch (IOException e) {
-					System.out.println(name + ": error reading message.");
+					System.out.println(nickName + ": error reading message.");
 					break;
 				}catch (Exception e) {
-					System.out.println(name + ": error.");
+					System.out.println(nickName + ": error.");
 					break;
 				}
 			}
 		}
 		
-		private void answer(String message) {
+		public String getNickName() {
+			return nickName;
+		}
+
+		public String getIpAdress() {
+			return ipAdress;
+		}
+
+		public Date getDateLoggedIn() {
+			return dateLoggedIn;
+		}
+
+		public Message getMessage() {
+			return message;
+		}
+
+		private void answer(Message message) {
 			try {
 				outStream.writeObject(message);
 			} catch (Exception e) {
@@ -152,8 +173,8 @@ public class Server {
 		@Override
 		public String toString() {
 			return dateLoggedIn + ": " 
-					+ (name.toLowerCase().equals("guest")
-					? "guest@" + ipAdress : name)
+					+ (nickName.toLowerCase().equals("guest")
+					? "guest@" + ipAdress : nickName)
 					+ "\n";
 		}
 	}
