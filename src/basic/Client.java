@@ -51,7 +51,18 @@ public class Client {
 			client.start();
 			while(true) {
 				String messageContent = input.nextLine();
-				Message message = new Message(messageContent);
+				Message message = null;
+				switch (messageContent.toLowerCase()) {
+				case "whosin":
+					message = new Message(1, messageContent);
+					break;
+				case "logout":
+					message = new Message(2, messageContent);
+					break;
+				default:
+					message = new Message(userName + ": " + messageContent);
+					break;
+				}
 				client.send(message);
 			}
 		} catch (IOException e) {
@@ -73,7 +84,7 @@ public class Client {
 					System.out.print(">> ");
 					System.out.println(message.getMessageContent());
 				} catch (Exception e) {
-					System.out.println("Cant read object from input stream.");
+					System.out.println("Logout.");
 					System.exit(0);
 				}
 			}

@@ -50,7 +50,8 @@ public class Server {
 	
 	public void answerAll(Message message) {
 		for (User user : userDatabase) {
-			System.out.println("sending to all: " + message.getMessageContent());
+			System.out.println("[sending to " + user.getNickName()
+								+ "] " + message.getMessageContent());
 			if(user.isAlive()) {
 				user.answer(message);
 			} else {
@@ -93,6 +94,7 @@ public class Server {
 			@Override
 			public void run() {
 				Scanner input = new Scanner(System.in);
+				System.out.println("Server running.");
 				while(true) {
 					String in = input.nextLine();
 					if (in.equals("exit")) {
@@ -151,7 +153,8 @@ public class Server {
 							logOut(this);
 							break;
 						case Message.TYPE_WHOSIN:
-							Message whois = new Message(userDatabase.listAll());
+							Message whois = new Message("Logged in users:\n"
+									+ userDatabase.listAll());
 							answer(whois);
 							break;
 						default:
@@ -159,7 +162,7 @@ public class Server {
 					}
 					
 				}catch (IOException e) {
-					System.out.println(nickName + ": error reading message.");
+					System.out.println(nickName + ": Logout.");
 					break;
 				}catch (Exception e) {
 					System.out.println(nickName + ": error.");
