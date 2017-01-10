@@ -15,15 +15,14 @@ import java.util.Date;
 public class Server {
 	private int portNumber;
 	private boolean serverActive = true;
-	private UserDatabase<User> userDatabase = new UserDatabase<>();
+	private UserDatabase<User> userDatabase = new UserDatabase<>();;
 	
 	public Server(int portNumber) {
 		this.portNumber = portNumber;
-//		try {
-//			userDatabase = userDatabase.load();
-//		} catch (Exception e) {
-//			System.out.println("Cant load database.");
-//		}
+		UserDatabase<User> loadDatabase = userDatabase.load();
+		if(loadDatabase != null) {
+			userDatabase = loadDatabase;
+		}
 	}
 	
 	public void start() {
@@ -44,9 +43,13 @@ public class Server {
 	}
 	
 	public void answerAll(Message message) {
-		for (Object object : userDatabase) {
+		for (User user : userDatabase) {
 			System.out.println("sending to all: " + message.getMessageContent());
-			((User)object).answer(message);
+			if(user.isAlive()) {
+				user.answer(message);
+			} else {
+				logOut(user);
+			}
 		}
 	}
 	
