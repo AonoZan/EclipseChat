@@ -149,7 +149,10 @@ public class Server {
 		
 		@Override
 		public String toString() {
-			return dateLoggedIn + ": " + name + "@" + ipAdress + "\n";
+			return dateLoggedIn + ": " 
+					+ (name.toLowerCase().equals("guest")
+					? "guest@" + ipAdress : name)
+					+ "\n";
 		}
 	}
 }
