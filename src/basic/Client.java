@@ -27,14 +27,11 @@ public class Client {
 	public void start() {
 		try {
 			System.out.println(socket.getPort());
-//			inStream = new ObjectInputStream(socket.getInputStream());
 			outStream = new ObjectOutputStream(socket.getOutputStream());
 			outStream.writeObject(userName);
 			new PortMonitor().start();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			System.out.println("error");
-			e.printStackTrace();
+			System.out.println("Can't open client output stream");
 		}
 	}
 	
@@ -54,14 +51,13 @@ public class Client {
 			Client client = new Client(socket, userName);
 			client.start();
 			while(true) {
-				System.out.print(":: ");
 				String messageContent = scan.nextLine();
 				Message message = new Message(messageContent);
 				client.send(message);
 			}
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			System.out.println("Can't open new socket:"
+					+ serverAddress + "@" + portNumber);
 		}
 	}
 	class PortMonitor extends Thread{
@@ -69,16 +65,16 @@ public class Client {
 			try {
 				inStream = new ObjectInputStream(socket.getInputStream());
 			} catch (IOException e1) {
-				// TODO Auto-generated catch block
-				e1.printStackTrace();
+				System.out.println("Can't read client input stream.");
+				System.exit(0);
 			}
 			while(true) {
 				try {
 					Message message = (Message)inStream.readObject();
+					System.out.print(">> ");
 					System.out.println(message.getMessageContent());
 				} catch (Exception e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
+					System.out.println("Cant read object from input stream.");
 					System.exit(0);
 				}
 			}

@@ -39,7 +39,7 @@ public class Server {
 				answerAll(newUserMessage);
 			}
 		} catch (Exception e) {
-			// TODO: handle exception
+			System.out.println("Can't open port at " + portNumber);
 		}
 	}
 	
@@ -55,8 +55,7 @@ public class Server {
 			user.close();
 			userDatabase.remove(user);
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			System.out.println("Can't close user.");
 		}
 	}
 	
@@ -64,6 +63,7 @@ public class Server {
 		int portNumber = 1991;
 		switch (args.length) {
 			case 0:
+				// for no arg call use default settings
 				break;
 			case 1:
 				try {
@@ -104,7 +104,7 @@ public class Server {
 				ipAdress = socket.getLocalAddress().getHostAddress();
 				dateLoggedIn = new Date();
 			} catch (Exception e) {
-				// TODO: handle exception
+				System.out.println("Error opening user in/out stream.");
 			}
 		}
 
@@ -160,7 +160,7 @@ public class Server {
 			try {
 				outStream.writeObject(message);
 			} catch (Exception e) {
-				// TODO: handle exception
+				System.out.println("Cant write object to user.");
 			}
 		}
 		
