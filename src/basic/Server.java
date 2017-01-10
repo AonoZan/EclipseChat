@@ -13,7 +13,7 @@ import java.util.Date;
  *  @author AonoZan Dejan Petrovic 2016 ©
  */
 public class Server {
-	private int portNumber = 1991;
+	private int portNumber;
 	private boolean serverActive = true;
 	private UserDatabase<User> userDatabase = new UserDatabase<>();
 	
@@ -59,6 +59,8 @@ public class Server {
 	public static void main(String[] args) {
 		int portNumber = 1991;
 		switch (args.length) {
+			case 0:
+				break;
 			case 1:
 				try {
 					portNumber = Integer.parseInt(args[0]);
