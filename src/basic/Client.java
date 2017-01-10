@@ -26,7 +26,6 @@ public class Client {
 	
 	public void start() {
 		try {
-			System.out.println(socket.getPort());
 			outStream = new ObjectOutputStream(socket.getOutputStream());
 			outStream.writeObject(userName);
 			new PortMonitor().start();
@@ -47,11 +46,11 @@ public class Client {
 	            "Enter your user name.", "guest");
 		
 		try (Socket socket = new Socket(serverAddress, portNumber);
-			Scanner scan = new Scanner(System.in)) {
+			Scanner input = new Scanner(System.in)) {
 			Client client = new Client(socket, userName);
 			client.start();
 			while(true) {
-				String messageContent = scan.nextLine();
+				String messageContent = input.nextLine();
 				Message message = new Message(messageContent);
 				client.send(message);
 			}
@@ -65,7 +64,7 @@ public class Client {
 			try {
 				inStream = new ObjectInputStream(socket.getInputStream());
 			} catch (IOException e1) {
-				System.out.println("Can't read client input stream.");
+				System.out.println("Server shutdown.");
 				System.exit(0);
 			}
 			while(true) {

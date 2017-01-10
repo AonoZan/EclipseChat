@@ -8,6 +8,7 @@ import java.io.Serializable;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.Date;
+import java.util.Scanner;
 
 /**
  *  @author AonoZan Dejan Petrovic 2016 ©
@@ -19,27 +20,32 @@ public class Server {
 	
 	public Server(int portNumber) {
 		this.portNumber = portNumber;
-		UserDatabase<User> loadDatabase = userDatabase.load();
-		if(loadDatabase != null) {
-			userDatabase = loadDatabase;
-		}
+//		UserDatabase<User> loadDatabase = userDatabase.load();// TODO deserialization
+//		if(loadDatabase != null) {
+//			userDatabase = loadDatabase;
+//		}
 	}
 	
 	public void start() {
 		try (ServerSocket serverSocket = new ServerSocket(portNumber)){
-			System.out.println(serverSocket.getInetAddress());
 			while(serverActive) {
 				Socket socket = serverSocket.accept();
-				
 				User user = new User(socket);
 				userDatabase.add(user);
 				user.start();
 				Message newUserMessage = new Message("New user on server: " + user.getNickName());
 				answerAll(newUserMessage);
 			}
+			
 		} catch (Exception e) {
 			System.out.println("Can't open port at " + portNumber);
 		}
+	}
+	
+	public void stop() {
+//		userDatabase.save(userDatabase);// TODO serialization
+		System.out.println("Server stoped.");
+		System.exit(0);
 	}
 	
 	public void answerAll(Message message) {
@@ -64,6 +70,7 @@ public class Server {
 	
 	public static void main(String[] args) {
 		int portNumber = 1991;
+		
 		switch (args.length) {
 			case 0:
 				// for no arg call use default settings
@@ -73,7 +80,6 @@ public class Server {
 					portNumber = Integer.parseInt(args[0]);
 				} catch (Exception e) {
 					System.out.println("Cant parse argument. Please provide port number.");
-					return;
 				}
 				break;
 			default:
@@ -81,21 +87,40 @@ public class Server {
 				System.exit(0);
 				break;
 		}
+		
 		Server server = new Server(portNumber);
+		class ServerInterpreter implements Runnable{
+			@Override
+			public void run() {
+				Scanner input = new Scanner(System.in);
+				while(true) {
+					String in = input.nextLine();
+					if (in.equals("exit")) {
+						server.stop();
+						break;
+					}
+				}
+				input.close();
+			}
+		}
+		Thread interpreter = new Thread(new ServerInterpreter());
+		
+		interpreter.start();
 		server.start();
+		
 	}
 	
 	public class User extends Thread implements Serializable{
 		private static final long serialVersionUID = -4709066551391491898L;
-		private Socket socket;
-		private ObjectInputStream inStream;
-		private ObjectOutputStream outStream;
+		private transient Socket socket;
+		private transient ObjectInputStream inStream;
+		private transient ObjectOutputStream outStream;
 		
 		private String nickName;
 		private String ipAdress;
-		private Date dateLoggedIn;
+		private transient Date dateLoggedIn;
 		
-		Message message;
+		private transient Message message;
 		
 		public User(Socket socket) {
 			this.socket = socket;
