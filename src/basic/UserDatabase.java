@@ -52,5 +52,13 @@ public class UserDatabase<T> extends ArrayList<T> implements Serializable{
 		}
 	}
 	
+	public String listAll() {
+		StringBuilder all = new StringBuilder();
+		for (Object ob : this.toArray()) {
+			all.append(ob);
+		}
+		
+		return all.toString();
+	}
 }
 
