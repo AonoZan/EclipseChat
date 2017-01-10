@@ -16,7 +16,7 @@ public class UserDatabase<T> extends ArrayList<T> implements Serializable{
 	private static final long serialVersionUID = 7064318736599431089L;
 
 	public static final String DATABASE_LOC = System.getProperty("user.dir")
-			+ "/storage/users_database/default.dat";
+			+ "/default.dat";
 	
 	public UserDatabase<T> load() {
 		return load(DATABASE_LOC);
