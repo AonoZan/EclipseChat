@@ -7,6 +7,9 @@ import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.Scanner;
 
@@ -16,14 +19,17 @@ import java.util.Scanner;
 public class Server {
 	private int portNumber;
 	private boolean serverActive = true;
-	private UserDatabase<User> userDatabase = new UserDatabase<>();;
+	private UserDatabase<String, User> userDatabase = new UserDatabase<>();
+	private ArrayList<String> userNickNames = new ArrayList<>();
+	public static final String DATABASE_LOC = System.getProperty("user.dir")
+			+ "/default.dat";
 	
 	public Server(int portNumber) {
 		this.portNumber = portNumber;
-//		UserDatabase<User> loadDatabase = userDatabase.load();// TODO deserialization
-//		if(loadDatabase != null) {
-//			userDatabase = loadDatabase;
-//		}
+		ArrayList<String> userNickNamesLoad = load();
+		if(userNickNamesLoad != null) {
+			userNickNames = userNickNamesLoad;
+		}
 	}
 	
 	public void start() {
@@ -31,10 +37,27 @@ public class Server {
 			while(serverActive) {
 				Socket socket = serverSocket.accept();
 				User user = new User(socket);
-				userDatabase.add(user);
-				user.start();
-				Message newUserMessage = new Message("New user on server: " + user.getNickName());
-				answerAll(newUserMessage);
+				String userNickName = user.getNickName();
+				
+				if(!userDatabase.values().contains(userNickName)) {
+					userDatabase.put(userNickName, user);
+					if(!userNickName.equals("guest")) {
+						userNickNames.add(user.getNickName());
+					}
+					user.start();
+					Message newUserMessage = null;
+					if (userNickNames.contains(userNickName)) {
+						newUserMessage = new Message("Welcome back: " + userNickName);
+					}else {
+						newUserMessage = new Message("New user on server: " + userNickName);
+					}
+					answerAll(newUserMessage);
+				}else {
+					Message newUserMessage = new Message("User name '" + userNickName + "' is already taken.\n");
+					System.out.println("Someone tried");
+					user.answer(newUserMessage);
+					socket.close();
+				}
 			}
 			
 		} catch (Exception e) {
@@ -43,13 +66,48 @@ public class Server {
 	}
 	
 	public void stop() {
-//		userDatabase.save(userDatabase);// TODO serialization
+		save(userNickNames);
 		System.out.println("Server stoped.");
 		System.exit(0);
 	}
 	
+	public ArrayList<String> load() {
+		return load(DATABASE_LOC);
+	}
+	@SuppressWarnings("unchecked")
+	public ArrayList<String> load(String path) {
+		ArrayList<String> database = null;
+
+		try (ObjectInputStream objectStream = new ObjectInputStream(Files.newInputStream(Paths.get(path)))) {
+			database = (ArrayList<String>) objectStream.readObject();
+		} catch (IOException ioe) {
+			System.out.println("Can't load from path:" + path);
+		} catch (ClassNotFoundException cnf) {
+			System.out.println("Class is not defined.");
+		} catch (Exception e) {
+			System.out.println("Can't save object.");
+		}
+
+		return database;
+	}
+	
+	public void save(Object database) {
+		save(database, DATABASE_LOC);
+	}
+	public void save(Object database, String path) {
+		try (ObjectOutputStream objectStream = new ObjectOutputStream(Files.newOutputStream(Paths.get(path)))) {
+			objectStream.writeObject(database);
+		} catch (IOException ioe) {
+			System.out.println("Can't save to path: " + path);
+			ioe.printStackTrace();
+		} catch (Exception e) {
+			System.out.println("Can't save object.");
+		}
+	}
+	
+	
 	public void answerAll(Message message) {
-		for (User user : userDatabase) {
+		for (User user : userDatabase.values()) {
 			System.out.println("[sending to " + user.getNickName()
 								+ "] " + message.getMessageContent());
 			if(user.isAlive()) {
@@ -68,6 +126,7 @@ public class Server {
 			System.out.println("Can't close user.");
 		}
 	}
+	
 	
 	public static void main(String[] args) {
 		int portNumber = 1991;
@@ -112,6 +171,7 @@ public class Server {
 		
 	}
 	
+	
 	public class User extends Thread implements Serializable{
 		private static final long serialVersionUID = -4709066551391491898L;
 		private transient Socket socket;
@@ -144,7 +204,6 @@ public class Server {
 			while(serverActive) {
 				try {
 					message = (Message)inStream.readObject();
-//					String messageContent = message.getMessageContent();
 					switch (message.getMessageType()) {
 						case Message.TYPE_SPEECH:
 							answerAll(message);
@@ -162,10 +221,10 @@ public class Server {
 					}
 					
 				}catch (IOException e) {
-					System.out.println(nickName + ": Logout.");
+					System.out.printf("%s@%s: Logout.\n", nickName, ipAdress);
 					break;
 				}catch (Exception e) {
-					System.out.println(nickName + ": error.");
+					System.out.printf("%s@%s: Error.\n", nickName, ipAdress);
 					break;
 				}
 			}
