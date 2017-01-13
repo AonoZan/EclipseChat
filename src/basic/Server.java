@@ -40,21 +40,21 @@ public class Server {
 				String userNickName = user.getNickName();
 				
 				if(!userDatabase.values().contains(userNickName)) {
-					userDatabase.put(userNickName, user);
-					if(!userNickName.equals("guest")) {
-						userNickNames.add(user.getNickName());
-					}
-					user.start();
 					Message newUserMessage = null;
 					if (userNickNames.contains(userNickName)) {
 						newUserMessage = new Message("Welcome back: " + userNickName);
 					}else {
 						newUserMessage = new Message("New user on server: " + userNickName);
 					}
+					userDatabase.put(userNickName, user);
+					if(!userNickName.equals("guest")) {
+						userNickNames.add(user.getNickName());
+					}
+					user.start();
 					answerAll(newUserMessage);
 				}else {
 					Message newUserMessage = new Message("User name '" + userNickName + "' is already taken.\n");
-					System.out.println("Someone tried");
+					System.out.println("Someone tried to use nick that is in use: " + userNickName);
 					user.answer(newUserMessage);
 					socket.close();
 				}
@@ -108,9 +108,9 @@ public class Server {
 	
 	public void answerAll(Message message) {
 		for (User user : userDatabase.values()) {
-			System.out.println("[sending to " + user.getNickName()
-								+ "] " + message.getMessageContent());
 			if(user.isAlive()) {
+				System.out.println("[Sending to : " + user.getNickName()
+								+ "] " + message.getMessageContent());
 				user.answer(message);
 			} else {
 				logOut(user);
@@ -121,7 +121,7 @@ public class Server {
 	private void logOut(User user) {
 		try {
 			user.close();
-			userDatabase.remove(user);
+			userDatabase.remove(user.getNickName());
 		} catch (IOException e) {
 			System.out.println("Can't close user.");
 		}
@@ -174,15 +174,15 @@ public class Server {
 	
 	public class User extends Thread implements Serializable{
 		private static final long serialVersionUID = -4709066551391491898L;
-		private transient Socket socket;
-		private transient ObjectInputStream inStream;
-		private transient ObjectOutputStream outStream;
+		private Socket socket;
+		private ObjectInputStream inStream;
+		private ObjectOutputStream outStream;
 		
 		private String nickName;
 		private String ipAdress;
-		private transient Date dateLoggedIn;
+		private Date dateLoggedIn;
 		
-		private transient Message message;
+		private Message message;
 		
 		public User(Socket socket) {
 			this.socket = socket;
