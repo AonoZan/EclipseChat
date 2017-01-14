@@ -1,5 +1,5 @@
 
-package basic;
+package chat;
 
 import java.io.Serializable;
 
