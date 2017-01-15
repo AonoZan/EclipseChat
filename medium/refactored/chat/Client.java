@@ -9,15 +9,12 @@ import javax.swing.JOptionPane;
  *  @author AonoZan Dejan Petrovic 2016 ©
  */
 public class Client {
-	
-	String nickName;
-	NetworkBridge networkBridge;
+	private NetworkBridge networkBridge;
 	
 	private boolean active = true;
 	
 	public Client(String nickName, NetworkBridge networkBridge) {
 		super();
-		this.nickName = nickName;
 		this.networkBridge = networkBridge;
 	}
 	
@@ -53,6 +50,7 @@ public class Client {
 			case "whosin":
 				return Message.TYPE_WHOSIN;
 			case "logout":
+				active = false;
 				return Message.TYPE_LOGOUT;
 			default:
 				break;
@@ -80,6 +78,22 @@ public class Client {
 			System.out.println("Can't connect to the localhost.\n"
 					+ "Try again later");
 			System.exit(0);
+		}
+		
+		LogIn logIn = new LogIn(nickName);
+		while(logIn.type != LogIn.APPROVED) {
+			logIn.type = LogIn.REQUEST;
+			networkBridge.writeObject(logIn);
+			logIn = (LogIn)networkBridge.readObject();
+			
+			if (logIn == null) {
+				System.out.println("Handshake error. Application exit.");
+				System.exit(0);
+			}else if (logIn.type == LogIn.NICK_TAKEN) {
+				nickName = JOptionPane.showInputDialog(
+			            "Nick name in use!\nPlease chose another.", "guest");
+				logIn.nickName = nickName;
+			}
 		}
 		
 		Client client = new Client(nickName, networkBridge);
