@@ -10,6 +10,7 @@ import javax.swing.JOptionPane;
  */
 public class Client {
 	private NetworkBridge networkBridge;
+	private Scanner input = new Scanner(System.in);
 	
 	private boolean active = true;
 	
@@ -31,13 +32,14 @@ public class Client {
 	class InputWorker extends Thread{
 		@Override
 		public void run() {
-			Scanner input = new Scanner(System.in);
-			while(active) {
+			int messageType = Message.DEFAULT_TYPE;
+			while(messageType != Message.TYPE_LOGOUT) {
 				String userInput = input.nextLine();
-				System.out.println(userInput);
-				int messageType = decodeMessageType(userInput);
-				Message message = new Message(messageType, userInput);
-				networkBridge.writeObject(message);
+				if(userInput != null) {
+					messageType = decodeMessageType(userInput);
+					Message message = new Message(messageType, userInput);
+					networkBridge.writeObject(message);
+				}
 			}
 			input.close();
 		}
@@ -63,7 +65,13 @@ public class Client {
 		public void run() {
 			while(active) {
 				Message message = (Message)networkBridge.readObject();
-				System.out.println(">> " + message.getMessageContent());
+				if (message != null) {
+					System.out.println(">> " + message.getMessageContent());
+				}else {
+					active = false;
+					networkBridge.close();
+					System.out.println("Server closed.");
+				}
 			}
 		}
 	}

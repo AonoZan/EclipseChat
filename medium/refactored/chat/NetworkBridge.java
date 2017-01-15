@@ -24,7 +24,6 @@ public class NetworkBridge {
 		try {
 			this.socket = new Socket(host, port);
 		} catch (IOException e) {
-//			e.printStackTrace();// TODO
 			System.out.println("Network bridge host/port error");
 		}
 	}
@@ -43,7 +42,6 @@ public class NetworkBridge {
 			}
 			return inStream.readObject();
 		} catch (ClassNotFoundException | IOException e) {
-			e.printStackTrace();// TODO
 			System.out.println("Network bridge read error");
 		}
 		
@@ -56,10 +54,17 @@ public class NetworkBridge {
 			}
 			outStream.writeObject(obj);
 		} catch (IOException e) {
-			e.printStackTrace();// TODO
 			System.out.println("Network bridge write error");
 		}
 		return false;
+	}
+	public void close() {
+		try {
+			socket.close();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 }
 
