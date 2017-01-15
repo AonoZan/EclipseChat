@@ -19,6 +19,7 @@ import java.util.concurrent.Executors;
  *  @author AonoZan Dejan Petrovic 2016 ©
  */
 public class Server extends Thread{
+	public static int guestUniqueId = 0;
 	public static final int DEFAULT_PORT = 1991;
 	public static final String ACTIVE_USERS_PATH = System.getProperty("user.dir")
 			+ "/registeredUsers.dat";
@@ -47,9 +48,13 @@ public class Server extends Thread{
 		}
 	}
 	public void answerAll(Message message) {
+		String messageContent = message.getMessageContent();
+		System.out.println("Message broadcast:");
 		for (ClientHost client : activeUsers.values()) {
+			System.out.println("|| to:" + client.logIn.nickName + " >> " + messageContent);
 			client.answer(message);
 		}
+		System.out.print(">> ");
 	}
 	@SuppressWarnings("unchecked")
 	public void serialize(String mode) {
@@ -106,11 +111,15 @@ public class Server extends Thread{
 				if(nickName == null) {
 					close();
 					break;
+				}else if (nickName.equals("guest")) {
+					nickName = nickName + guestUniqueId++;
+					logIn.nickName = nickName;
 				}
 				if (activeUsers.containsKey(nickName)){
 					logIn.type = LogIn.NICK_TAKEN;
 				}else {
-					if(nickName.equals("guest") || registeredUsers.contains(nickName)) {
+					if(registeredUsers.contains(nickName)) {
+						
 						answerAll(new Message(nickName + " joined party."));
 					}else {
 						answerAll(new Message(nickName + " have registered."));
@@ -166,7 +175,7 @@ public class Server extends Thread{
 		server.start();
 		
 		while(!serverCommand.equals("exit")) {
-			System.out.print("Server >> ");
+			System.out.print(">> ");
 			serverCommand = input.nextLine();
 		}
 		

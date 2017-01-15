@@ -66,7 +66,7 @@ public class Client {
 			while(active) {
 				Message message = (Message)networkBridge.readObject();
 				if (message != null) {
-					System.out.println(">> " + message.getMessageContent());
+					System.out.println("|| " + message.getMessageContent());
 				}else {
 					active = false;
 					networkBridge.close();
