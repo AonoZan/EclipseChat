@@ -80,7 +80,9 @@ public class Client {
 		
 		String nickName = JOptionPane.showInputDialog(
 	            "Enter your nick name.", "guest");
-		NetworkBridge networkBridge = new NetworkBridge();
+		String hostAddress = JOptionPane.showInputDialog(
+	            "Enter ip adress.", "guest");
+		NetworkBridge networkBridge = new NetworkBridge(hostAddress, 1991);
 		
 		if(networkBridge.isSocketNull()) {
 			System.out.println("Can't connect to the localhost.\n"
