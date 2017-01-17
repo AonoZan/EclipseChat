@@ -1,5 +1,5 @@
 
-package striped.chat;
+package stripped.chat;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
