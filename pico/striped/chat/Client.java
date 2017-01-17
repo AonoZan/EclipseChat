@@ -36,12 +36,6 @@ public class Client {
 			String message = input.nextLine();
 			outStream.writeObject(name + ": " + message);
 			// ako listener nije jos uvjek inicijaliziran
-			if(inListener == null) {
-				
-				// kreiraj thread koji ce osliuskivati i pokreni ga
-				inListener = new InputListener();
-				new Thread(inListener).start();
-			}
 			// uzimaj sledecu poruku od korisnika i salji je serveru
 		}
 		input.close();
